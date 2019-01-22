@@ -204,10 +204,27 @@ recalcCanvasSize(); //Force recalculate canvas size once
 let cols = [
 ];
 
+let colorlistElem = get("colorlist");
+
 let addColor = (r, g, b) => {
-    cols.push({
-        r: r, g: g, b: b
-    });
+    //<div class="coloropt">
+    //<button class="remove">X</button>
+    //</div>
+    let colopt = make("div");
+    colopt.className = "coloropt";
+    colopt.style["background-color"] = "rgb(" + r + "," + g + "," + b + ")";
+    let btn = make("button");
+    btn.className = "remove";
+    btn.textContent = "X";
+    btn._data = {
+        index:cols.length
+    };
+    colopt._data = btn._data;
+    colopt.appendChild(btn);
+    colorlistElem.appendChild(colopt);
+    let nc = {r:r,g:g,b:b};
+    btn._data.color = nc;
+    cols.push(nc);
     renderPixels(cols);
     return cols.length - 1;
 }
@@ -235,4 +252,22 @@ renderPixels(cols);
 on(window, "resize", () => {
     recalcCanvasSize();
     renderPixels(cols);
+});
+
+on(document, "click", (evt)=>{
+    if (evt.target.classList.contains("remove")) {
+        //if (evt.target._data.index) {
+            removeColor(evt.target._data.index);
+            evt.target.parentNode.remove();
+        //}
+    } else if (evt.target.classList.contains("coloropt")) {
+        evt.target._data.color.r = parseInt(Math.random()*255);
+        evt.target._data.color.g = parseInt(Math.random()*255);
+        evt.target._data.color.b = parseInt(Math.random()*255);
+        evt.target.style["background-color"] = "rgb(" +
+        evt.target._data.color.r + "," +
+        evt.target._data.color.g + "," +
+        evt.target._data.color.b + ")";
+        renderPixels(cols);
+    }
 });
