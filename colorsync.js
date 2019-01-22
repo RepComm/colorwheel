@@ -76,10 +76,14 @@ let canvas = get("canvas");
 let ctx = canvas.getContext("2d");
 
 let recalcCanvasSize = () => {
-    let r = rect(canvas);
+    let r = rect(canvas.parentNode.parentNode);
+    canvas.parentNode.style.height = r.width + "px";
+    r = rect(canvas.parentNode);
     let smallest = r.width < r.height ? r.width : r.height;
     canvas.width = smallest;
     canvas.height = smallest;
+    canvas.style.height = smallest + "px";
+    canvas.style.width = smallest + "px";
 }
 
 /** Lerp two colors *c0* and *c1* by an amount *a*
@@ -99,7 +103,7 @@ let blendColors = (c0, c1, a) => {
  * @param {Array} colors array of colors to use
  * @param {Float} angle degrees angle of the current pixel (context) from the center of canvas
  */
-let calcColor = (colors, angle) => {
+let calcColor = (colors, angle, dist, wd2) => {
     //Get the appropriate approximate color index at this rotation
     let approxColorIndex = lerp(0, colors.length, angle / 360);
     //Get nearest lower color index from the list
@@ -122,14 +126,26 @@ let calcColor = (colors, angle) => {
     //Percentage ^^ is between 0.0 and 1.0
     let amount = angleRelative / anglesBetween;
 
-    return blendColors(c0, c1, amount); //Return the blended color
+    let c = blendColors(c0, c1, amount);
+    c[0] /= dist / wd2;
+    c[1] /= dist / wd2;
+    c[2] /= dist / wd2;
+
+    return c;
 }
 
+//let iter = 100000;
+
 let renderPixels = (colors) => {
+    //iter /= 1.05;
     let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let data = imgData.data;
 
+    let smallest = canvas.width > canvas.height ? canvas.width : canvas.height;
+
+    //let w = canvas.width, wd2 = w / 2;
     let w = canvas.width, wd2 = w / 2;
+    //let h = canvas.height, hd2 = h / 2;
     let h = canvas.height, hd2 = h / 2;
     let x, y, angle, c;
 
@@ -140,20 +156,32 @@ let renderPixels = (colors) => {
         y = Utils.IndexToTwoDimY(i / 4, w);
         let d = dist(x, y, wd2, hd2);
 
+        if (d + 5 > wd2) {
+            data[i + 0] = 0;
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+            data[i + 3] = 0;
+            continue;
+        }
+
         angle = degrees(
-                Math.atan2(
-                    y - hd2,
-                    x - wd2
-                )
+            Math.atan2(
+                y - hd2,
+                x - wd2
+            )
         ) + 180; //Rotate by 180* to rid ourselves of negative rotations
 
-        c = calcColor(colors, angle);
+        c = calcColor(colors, angle, d, wd2);
+        
+        // c[0] *= Math.sin(c[0]/iter);
+        // c[1] *= Math.sin(c[1]/iter);
+        // c[2] *= Math.sin(c[2]/iter);
 
         data[i + 0] = c[0]; //parseInt(r); //Red
         data[i + 1] = c[1]; //parseInt(g); //Green
         data[i + 2] = c[2]; //parseInt(b); //Blue
         data[i + 3] = 255;
-        
+
         //Do something if pixel is out of circular radius
         if (d + 10 > wd2) {
             let t0 = data[i + 0]; //Red
@@ -164,7 +192,6 @@ let renderPixels = (colors) => {
             data[i + 1] = t2;
             data[i + 2] = t0;
             data[i + 3] = 255;
-            continue;
         }
     }
     //Put the pixel data back
@@ -185,18 +212,25 @@ let addColor = (r, g, b) => {
     return cols.length - 1;
 }
 
-//Add some default colors
-addColor(0, 0, 255);
-addColor(0, 255, 0);
-addColor(255, 0, 0);
-
 let removeColor = (ind) => {
     cols.splice(ind, 1);
     renderPixels(cols);
 }
 
+for (let i = 0; i < 3; i++) {
+    addColor(
+        parseInt(Math.random() * 255),
+        parseInt(Math.random() * 255),
+        parseInt(Math.random() * 255)
+    );
+}
+
 //Force rendering everything once
 renderPixels(cols);
+
+// setInterval(()=>{
+//     renderPixels(cols);
+// }, 100);
 
 on(window, "resize", () => {
     recalcCanvasSize();
