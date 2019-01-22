@@ -1,7 +1,9 @@
-# NovoFont
+# ColorSync
 Work in progress color gradient wheel renderer
 
 ![Image](../master/example.png?raw=true)
+
+[Live Demo](https://repcomm.github.io/colorsync/colorsync.html)
 
 This project was intended for me to learn an algorithm that is on
 my 'scary/to conquer' list.
