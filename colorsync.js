@@ -1,53 +1,42 @@
 "use strict";
 
+//Get an element by its ID, alias
 let get = (id) => document.getElementById(id);
+//Get bounding rectangle, alias
 let rect = (e) => e.getBoundingClientRect();
-
+//Create an element, alias
 let make = (type) => document.createElement(type);
-
+//AddEventListener alias
 let on = (elem, type, callback, options) => elem.addEventListener(type, callback, options);
 
-let canvas = get("canvas");
-let ctx = canvas.getContext("2d");
-
+//Maths section
 let Utils = {
-    /* Array functions
-     * Repurposed from https://softwareengineering.stackexchange.com/questions/212808/treating-a-1d-data-structure-as-2d-grid
-     * Thank you to Doc Brown's answer!
-    */
-    /* Two dimensional grid x and y point to a 1d array index
-     * x - the x coordinate (integer)
-     * y - the y coordinate (integer)
-     * width - the width of the grid structure 
-    */
+    /** Convert two dimensional coordinates to a one dimensional index
+     * @param {Integer} x coordinate
+     * @param {Integer} y coordinate
+     * @param {Integer} width of bounding grid
+     */
     TwoDimToIndex(x, y, width) {
         return x + width * y;
     },
-    /* 1d array index to 2d grid X coordinate
-     * index - the index in 1d array (integer)
-     * width - the width of the grid structure the returned x coordinate belongs to
-    */
+    /** Convert one dimensional index to two dimensional X coordinate
+     * @param {Integer} index one dimensional offset index
+     * @param {Integer} width of bounding grid
+     */
     IndexToTwoDimX(index, width) {
         return index % width;
     },
-    /* 1d array index to 2d grid Y coordinate
-     * index - the index in 1d array (integer)
-     * width - the width of the grid structure the returned y coordinate belongs to
-    */
+    /** Convert one dimensional index to two dimensional Y coordinate
+     * @param {Integer} index one dimensional offset index
+     * @param {Integer} width of bounding grid
+     */
     IndexToTwoDimY(index, width) {
         return index / width;
     },
-    /* Round a number to the next (not nearest) number
-     * Examples:
-     * roundToNext(4, 5) -> returns 5
-     * roundToNext(42.291, 50) -> returns 50
-     * roundToNext(2.123, 3) -> returns 3
-     * roundToNext(11.1, 11) -> returns 22
-     * roundToNext(100.001, 100) -> returns 200
-     * 
-     * n - the number to round
-     * next - the number to clip by (snap to highest)
-    */
+    /** Round *n* to the next increment of *next* argument
+     * @param {Number} n to round
+     * @param {Number} next round up to in increments of this number
+     */
     roundToNext(n, next) {
         let isNeg = (n < 0);
         if (isNeg) { n -= next };
@@ -58,17 +47,10 @@ let Utils = {
             return n + next - resto;
         }
     },
-    /* Round a number 'n' to the nearest 'to'
-     * Examples:
-     * roundTo(4, 5) -> returns 5
-     * roundToNext(0.5, 1) -> returns 1
-     * roundToNext(0.49, 1) -> returns 0
-     * roundToNext(2.1, 2) -> returns 2
-     * roundToNext(2.5, 1) -> returns 3
-     * 
-     * n - the number to round
-     * to - the number to round to
-    */
+    /** Regular round, but with added 'to' option
+     * @param {Number} n number to round
+     * @param {Number} to round to
+     */
     roundTo(n, to) {
         var resto = n % to;
         if (resto <= (to / 2)) {
@@ -79,20 +61,19 @@ let Utils = {
     }
 };
 
-let pi = 3.141592653589793;
+let pi = 3.141592653589793; //All the digits I could remember..
 
 let radians = (degrees) => degrees * (pi / 180);
 let degrees = (radians) => radians * (180 / pi);
-let lerp = (a, b, c) => {
-    return a + c * (b - a);
-}
+let lerp = (a, b, c) => a + c * (b - a);
 
-let dist = (x1, y1, x2, y2)=>{
-    return Math.sqrt(
-        Math.pow(x1 - x2, 2) +
-        Math.pow(y1 - y2, 2)
-    );
-}
+let dist = (x1, y1, x2, y2) => Math.sqrt(
+    Math.pow(x1 - x2, 2) +
+    Math.pow(y1 - y2, 2)
+);
+
+let canvas = get("canvas");
+let ctx = canvas.getContext("2d");
 
 let recalcCanvasSize = () => {
     let r = rect(canvas);
@@ -101,6 +82,11 @@ let recalcCanvasSize = () => {
     canvas.height = smallest;
 }
 
+/** Lerp two colors *c0* and *c1* by an amount *a*
+ * @param {Object} c0 color { r:red, g:green, b:blue }
+ * @param {*} c1 color { r:red, g:green, b:blue }
+ * @param {*} a amount to linearly interpolate by
+ */
 let blendColors = (c0, c1, a) => {
     return [
         lerp(c0.r, c1.r, a),
@@ -109,27 +95,34 @@ let blendColors = (c0, c1, a) => {
     ];
 }
 
+/** Calculate a pixel color based on a rotation angle
+ * @param {Array} colors array of colors to use
+ * @param {Float} angle degrees angle of the current pixel (context) from the center of canvas
+ */
 let calcColor = (colors, angle) => {
-    let approxColorIndex = lerp(0, colors.length, angle/360);
+    //Get the appropriate approximate color index at this rotation
+    let approxColorIndex = lerp(0, colors.length, angle / 360);
+    //Get nearest lower color index from the list
     let low = Math.floor(approxColorIndex);
+    //Get nearest higher color index from the list
     let high = Math.ceil(approxColorIndex);
-    
+
     if (high >= colors.length) high = 0; //Loop back around for color out of bounds
-    if (low >= colors.length) low = 0; 
+    if (low >= colors.length) low = 0;
 
     let c0 = colors[low];
     let c1 = colors[high];
+    //DEBUG, shouldn't happen now
     if (!c0 || !c1) console.log(low, high, c0, c1, colors.length);
 
-    let anglesBetween = 360*(1/colors.length); //Slice size
+    //Think of this value as the arc-angle slice of pizza we want
+    let anglesBetween = 360 * (1 / colors.length);
+    //Relative angle in our slice that the current rotation is in
     let angleRelative = angle % anglesBetween;
-    let amount = angleRelative/anglesBetween;
+    //Percentage ^^ is between 0.0 and 1.0
+    let amount = angleRelative / anglesBetween;
 
-    return [
-        lerp(c0.r, c1.r, amount),
-        lerp(c0.g, c1.g, amount),
-        lerp(c0.b, c1.b, amount)
-    ];
+    return blendColors(c0, c1, amount); //Return the blended color
 }
 
 let renderPixels = (colors) => {
@@ -138,63 +131,71 @@ let renderPixels = (colors) => {
 
     let w = canvas.width, wd2 = w / 2;
     let h = canvas.height, hd2 = h / 2;
-    let x, y, angle;
+    let x, y, angle, c;
 
+    //Loop through every pixel in our image
     for (let i = 0; i < data.length; i += 4) {
+        //Calculate x, y, and their distance from center
         x = Utils.IndexToTwoDimX(i / 4, w);
         y = Utils.IndexToTwoDimY(i / 4, w);
         let d = dist(x, y, wd2, hd2);
 
-        if (d-1 > wd2) {
-            data[i + 0] = 0; //Red
-            data[i + 1] = 0; //Green
-            data[i + 2] = 0; //Blue
-            data[i + 3] = 255; //parseInt(Math.random()*255); //Alpha
-            continue;
-        }
-
-        angle =
-            degrees(
+        angle = degrees(
                 Math.atan2(
                     y - hd2,
                     x - wd2
                 )
-            )+180;
+        ) + 180; //Rotate by 180* to rid ourselves of negative rotations
 
-        let c = calcColor(colors, angle);
+        c = calcColor(colors, angle);
 
         data[i + 0] = c[0]; //parseInt(r); //Red
         data[i + 1] = c[1]; //parseInt(g); //Green
         data[i + 2] = c[2]; //parseInt(b); //Blue
         data[i + 3] = 255;
+        
+        //Do something if pixel is out of circular radius
+        if (d + 10 > wd2) {
+            let t0 = data[i + 0]; //Red
+            let t1 = data[i + 1]; //Green
+            let t2 = data[i + 2]; //Blue
+            //Swapping channels just for fun
+            data[i + 0] = t1;
+            data[i + 1] = t2;
+            data[i + 2] = t0;
+            data[i + 3] = 255;
+            continue;
+        }
     }
-
+    //Put the pixel data back
     ctx.putImageData(imgData, 0, 0);
 }
 
-let render = () => {
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    // Will always clear the right space
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+recalcCanvasSize(); //Force recalculate canvas size once
 
-    ctx.restore();
-    //ctx.strokeStyle ctx.lineWidth ctx.lineCap
-    //ctx.save ctx.scale ctx.translate ctx.restore
-    //ctx.beginPath ctx.stroke
-}
-
-recalcCanvasSize();
-
+//List of colors we'll keep
 let cols = [
-    { r: 195, g: 63, b: 166 },
-    { r: 89, g: 0, b: 107 },
-    { r: 39, g: 201, b: 52 },
-    { r: 255, g: 0, b: 0 },
-    { r: 0, g: 255, b: 0 },
-    { r: 0, g: 0, b: 255 }
 ];
 
+let addColor = (r, g, b) => {
+    cols.push({
+        r: r, g: g, b: b
+    });
+    renderPixels(cols);
+    return cols.length - 1;
+}
+
+//Add some default colors
+addColor(0, 0, 255);
+addColor(0, 255, 0);
+addColor(255, 0, 0);
+
+let removeColor = (ind) => {
+    cols.splice(ind, 1);
+    renderPixels(cols);
+}
+
+//Force rendering everything once
 renderPixels(cols);
 
 on(window, "resize", () => {
