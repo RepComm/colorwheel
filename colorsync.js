@@ -22,10 +22,12 @@ class ColorWheelWidget {
             g:g,
             b:b
         });
+        this.renderPixels();
         return this.colors.length-1;
     }
     removeColor(index) {
         this.colors.splice(index, 1);
+        this.renderPixels();
     }
     recalcCanvasSize() {
         let r = rect(this.canvas);

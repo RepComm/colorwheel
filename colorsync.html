@@ -13,8 +13,7 @@
             height:100vh;
             overflow:hidden;
         }
-        #canvas {
-            position:absolute;
+        #canvas, #canvas0 {
             top:0px;
             left:0px;
             width:100%;
@@ -29,7 +28,7 @@
             top:0%;
             left:0%;
             width:25%;
-            height:100%;
+            height:50%;
         }
         #colorwheel {
             top:0%;
@@ -68,18 +67,37 @@
             <canvas id="canvas">
 
             </canvas>
-        </div>
-        <div id="colorlist">
+            <canvas id="canvas0">
+
+            </canvas>
         </div>
     </div>
     <script type="text/JavaScript" src="function_alias.js"></script>
     <script type="text/JavaScript" src="math.js"></script>
     <script type="text/JavaScript" src="colorsync.js"></script>
+
     <script type="text/JavaScript">
-    (()=>{
-        let canv = get("canvas");
-        let cww = new ColorWheelWidget(canv);
-    })();
+    //Get a canvas
+    let canv = get("canvas");
+    //Create a widget using the canvas
+    let cww = new ColorWheelWidget(canv);
+    
+    //Get another canvas
+    let canv0 = get("canvas0");
+    //Create another widget using it
+    let cww0 = new ColorWheelWidget(canv0);
+
+    //Loop through all colors of second widget
+    for (let i=0; i<cww.colors.length; i++) {
+        let c = cww0.colors[i];
+
+        //Set random values for each channel
+        c.r = Math.floor(Math.random()*100);
+        c.g = Math.floor(Math.random()*100);
+        c.b = Math.floor(Math.random()*255);
+    }
+    //Tell the widget to redraw pixels (addColor and removeColor member functions auto call this)
+    cww0.renderPixels();
     </script>
 </body>
 
