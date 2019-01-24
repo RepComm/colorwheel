@@ -6,7 +6,7 @@ Purpose:
 - Engine for advanced color picker projects I am working on
 - Learning/fun/experience for me
 
-```
+```javascript
 <div id="colorwidget">
     <div id="colorwheel">
         <canvas id="canvas">
