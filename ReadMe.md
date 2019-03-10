@@ -41,5 +41,5 @@ cww.renderPixels();
 </script>
 ```
 
-[Live Demo](https://repcomm.github.io/colorsync)
+[Live Demo](https://repcomm.github.io/colorwheel)
 
