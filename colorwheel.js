@@ -83,6 +83,9 @@ class ColorWheelWidget {
 
         return c;
     }
+    /**
+     * Render each pixel using maatttthhhh
+     */
     renderPixels () {
         let imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         let data = imgData.data;
@@ -101,14 +104,6 @@ class ColorWheelWidget {
             x = Utils.IndexToTwoDimX(i / 4, w);
             y = Utils.IndexToTwoDimY(i / 4, w);
             let d = dist(x, y, wd2, hd2);
-    
-            // if (d + 5 > wd2) {
-            //     data[i + 0] = 0;
-            //     data[i + 1] = 0;
-            //     data[i + 2] = 0;
-            //     data[i + 3] = 0;
-            //     continue;
-            // }
     
             angle = degrees(
                 Math.atan2(
