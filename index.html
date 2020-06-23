@@ -2,103 +2,17 @@
 <html>
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Color Wheel demo app</title>
-    <style>
-        body {
-            background-color:rgb(83, 83, 83);
-            margin:0px;
-            padding:0px;
-            width:100vw;
-            height:100vh;
-            overflow:hidden;
-        }
-        #canvas, #canvas0 {
-            top:0px;
-            left:0px;
-            width:100%;
-            height:100%;
-            border-color:rgb(156, 229, 235);
-            border-width:4px;
-            border-style:dashed;
-            border-radius:50em;
-        }
-        #colorwidget {
-            position:absolute;
-            top:0%;
-            left:0%;
-            width:25%;
-            height:50%;
-        }
-        #colorwheel {
-            top:0%;
-            left:0%;
-            width:100%;
-            height:100%;
-        }
-        #colorlist {
-            top:0%;
-            left:0%;
-            width:100%;
-        }
-        #colorlist > .coloropt {
-            width:100%;
-            border-radius:0.25em;
-            padding:5px;
-            margin-top:5px;
-            background-color:white;
-        }
-        .coloropt > button {
-            text-align:center;
-            border:none;
-            background-color:grey;
-            color:rgb(255, 255, 255);
-            border-radius:0.25em;
-            border-color:black;
-            border-width:2px;
-            border-style: dashed;
-        }
-    </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>ColorWheel demo</title>
+  <link rel="stylesheet" href="./index.css" />
 </head>
 
 <body>
-    <div id="colorwidget">
-        <div id="colorwheel">
-            <canvas id="canvas">
-
-            </canvas>
-            <canvas id="canvas0">
-
-            </canvas>
-        </div>
-    </div>
-    <script type="text/JavaScript" src="function_alias.js"></script>
-    <script type="text/JavaScript" src="math.js"></script>
-    <script type="text/JavaScript" src="colorwheel.js"></script>
-
-    <script type="text/JavaScript">
-    //Get a canvas
-    let canv = get("canvas");
-    //Create a widget using the canvas
-    let cww = new ColorWheelWidget(canv);
+  <div id="my-color-wheel-container">
     
-    //Get another canvas
-    let canv0 = get("canvas0");
-    //Create another widget using it
-    let cww0 = new ColorWheelWidget(canv0);
-
-    //Loop through all colors of second widget
-    for (let i=0; i<cww.colors.length; i++) {
-        let c = cww0.colors[i];
-
-        //Set random values for each channel
-        c.r = Math.floor(Math.random()*100);
-        c.g = Math.floor(Math.random()*100);
-        c.b = Math.floor(Math.random()*255);
-    }
-    //Tell the widget to redraw pixels (addColor and removeColor member functions auto call this)
-    cww0.renderPixels();
-    </script>
+  </div>
+  <script type="module" src="./index.js">
+  </script>
 </body>
 
 </html>

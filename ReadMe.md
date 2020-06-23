@@ -1,45 +1,43 @@
-# ColorSync
-A vanilla js/canvas arbitrary color gradient renderer/widget.
+# ColorWheel
+ESModule for rendering color wheels
 
-Purpose:
-- Render color wheels
-- Engine for advanced color picker projects I am working on
-- Learning/fun/experience for me
+Take a look at the demo code:
+[demo 0](./index.js)
 
-![Image](../master/example.png?raw=true)
+Take a look at the output:
+[demo 0 - visual](https://repcomm.github.io/colorwheel)
 
+Usage is fairly simple:
+
+Creating the wheel
 ```javascript
-<div id="colorwidget">
-    <div id="colorwheel">
-        <canvas id="canvas">
-
-        </canvas>
-    </div>
-</div>
-<script type="text/JavaScript" src="function_alias.js"></script>
-<script type="text/JavaScript" src="math.js"></script>
-<script type="text/JavaScript" src="colorwheel.js"></script>
-
-<script type="text/JavaScript">
-//Get a canvas
-let canv = get("canvas");
-
-//Create a widget using the canvas
-let cww = new ColorWheelWidget(canv);
-
-//Loop through colors
-for (let i=0; i<cww.colors.length; i++) {
-    let c = cww.colors[i];
-
-    //Set random values for each channel
-    c.r = Math.floor(Math.random()*100);
-    c.g = Math.floor(Math.random()*100);
-    c.b = Math.floor(Math.random()*255);
-}
-//Tell the widget to redraw pixels (addColor and removeColor member functions auto call this)
-cww.renderPixels();
-</script>
+let myWheel = new ColorWheel()
 ```
 
-[Live Demo](https://repcomm.github.io/colorwheel)
+Adding & removing colors
+```javascript
+let red = WheelColor.fromRGB(255, 0, 0);
+myWheel.addColor(red);
+myWheel.removeColor(red);
+```
 
+Appending it to the dom
+```javascript
+myWheel.mount( myDiv );
+//mount accepts an html or Component class (see component.js)
+
+//Similar to
+div.appendChild ( myWheel.element )
+```
+
+Helper functions that make life easy
+```javascript
+  //Handle window resizing
+  .handleResize()
+
+  //Auto render when state changes
+  .handleRedrawLoop()
+
+  //Applies 100% to width and height of canvas element
+  .fillParentSize();
+```

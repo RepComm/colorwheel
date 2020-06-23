@@ -1,0 +1,19 @@
+body {
+  background-color: rgb(83, 83, 83);
+  margin: 0px;
+  padding: 0px;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#my-color-wheel-container {
+  position: absolute;
+  top:40%;
+  left:40%;
+  width:20%;
+  height:20%;
+  border-width:1px;
+  border-style:solid;
+  border-color:white;
+}
