@@ -1,6 +1,8 @@
 # ColorWheel
 ESModule for rendering color wheels
 
+![demo 0 - image](./example.png)
+
 Take a look at the demo code:
 [demo 0](./index.js)
 
