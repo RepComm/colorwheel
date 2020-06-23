@@ -50,7 +50,6 @@ export class WheelColor {
 export class ColorWheel extends Component {
   constructor() {
     super();
-    console.log(this);
     /**@type {Array<WheelColor>}*/
     this.colors = new Array();
 
@@ -63,7 +62,21 @@ export class ColorWheel extends Component {
     /**@type {ImageData|undefined} */
     this.imagedata = undefined;
 
+    this.center = {
+      x:0,
+      y:0
+    };
+
     this.needsRedraw = false;
+    this.shouldHandleRedrawLoop = false;
+    this.onAnimFrame = ()=>{
+      if (this.shouldHandleRedrawLoop) {
+        if (this.needsRedraw) {
+          this.render();
+        }
+        window.requestAnimationFrame(this.onAnimFrame);
+      }
+    }
   }
   /**Add a color
    * @param {WheelColor} c
@@ -108,7 +121,8 @@ export class ColorWheel extends Component {
    * @returns {ColorWheel} self
    */
   handleRedrawLoop() {
-
+    this.shouldHandleRedrawLoop = true;
+    window.requestAnimationFrame(this.onAnimFrame);
     return this;
   }
   fillParentSize() {
@@ -133,6 +147,8 @@ export class ColorWheel extends Component {
     this.element.width = Math.floor(this.rect.width);
     this.element.height = Math.floor(this.rect.height);
     this.imagedata = new ImageData(this.element.width, this.element.height);
+    this.center.x = this.imagedata.width/2;
+    this.center.y = this.imagedata.height/2;
     this.markRedraw();
     return this;
   }
@@ -144,10 +160,10 @@ export class ColorWheel extends Component {
    * @returns {ColorWheel} self
    */
   setPixelAtIndex(ind, r, g, b) {
-    this.imagedata[ind + 0] = Math.floor(r);
-    this.imagedata[ind + 1] = Math.floor(g);
-    this.imagedata[ind + 2] = Math.floor(b);
-    this.imagedata[ind + 3] = 255; //Full alpha
+    this.imagedata.data[ind + 0] = Math.floor(r);
+    this.imagedata.data[ind + 1] = Math.floor(g);
+    this.imagedata.data[ind + 2] = Math.floor(b);
+    this.imagedata.data[ind + 3] = 255; //Full alpha
     return this;
   }
   /**Set a pixel on the canvas at xy position
@@ -176,26 +192,35 @@ export class ColorWheel extends Component {
    * @returns {number} an index in this.colors
    */
   getPieEdgeLeft(theta) {
-    return Math.floor(
-      lerpClamped(
+    return this.getValidPieEdge(Math.floor(
+      lerp(
         0,
-        this.colors.length,
+        this.colors.length-1,
         theta / (Math.PI * 2)
       )
-    );
+    ));
+  }
+  /**Returns a valid index within this.colors
+   * @param {number} invalidEdge
+   * @returns {number}
+   */
+  getValidPieEdge (invalidEdge) {
+    let result = invalidEdge % this.colors.length;
+    if (result < 0) result = this.colors.length-result;
+    return result;
   }
   /**Get the rightmost edge of the pie slice
    * @param {number} theta in radians
    * @returns {number} an index in this.colors
    */
   getPieEdgeRight(theta) {
-    return Math.ceil(
-      lerpClamped(
+    return this.getValidPieEdge(Math.ceil(
+      lerp(
         0,
-        this.colors.length,
-        theta / (Math.PI * 2)
+        this.colors.length-1,
+        theta / (Math.PI*2)
       )
-    );
+    ));
   }
   /**Get radian angle of point in canvas around center
    * @param {number} x 
@@ -204,8 +229,8 @@ export class ColorWheel extends Component {
    */
   getAngleOfPoint(x, y) {
     return Math.atan2(
-      y - this.imagedata.width/2,
-      x - this.imagedata.height/2
+      y - this.center.y,
+      x - this.center.x
     ) + (Math.PI * 2); //Get rid of negative rotations by adding 180deg
   }
   /**Internal, should not be called unless you know what you're doing
@@ -215,18 +240,17 @@ export class ColorWheel extends Component {
     this.clearRedraw();
     let left = 0, right = 1, theta = 0, d = 0, a = 0;
 
-    let pieSliceArcAngle = 360 * (1 / this.colors.length);
+    let pieSliceArcAngle = (Math.PI*2) * (1 / this.colors.length);
     let currentArcAngle = 0;
-
     for (let x = 0; x < this.imagedata.width; x++) {
       for (let y = 0; y < this.imagedata.height; y++) {
         //Find out what slice (color) of the pie (wheel) we're in
         //Get the angle around the center
         theta = this.getAngleOfPoint(x, y);
         //Find the left edge color index
-        left = this.getPieEdgeLeft(theta)-1;
+        left = this.getPieEdgeLeft(theta);
         //Find the right edge color index
-        right = this.getPieEdgeRight(theta)-1;
+        right = this.getPieEdgeRight(theta);
         //Calculate distance from center
         d = dist(x, y, this.imagedata.width/2, this.imagedata.height/2);
 
@@ -234,7 +258,7 @@ export class ColorWheel extends Component {
         currentArcAngle = theta % pieSliceArcAngle;
         //Normalize to 0.0 thru 1.0
         a = currentArcAngle / pieSliceArcAngle;
-        
+
         //Modify imagedata
         WheelColor.lerp(
           this.colors[left],
@@ -242,11 +266,9 @@ export class ColorWheel extends Component {
           a,
           this.mixingColor
         );
-        if (x < 2) console.log( degrees(theta).toFixed(2), this.mixingColor.toString());
         this.setColorAtXY(x, y, this.mixingColor);
       }
     }
-    // console.log(this.imagedata);
     this.ctx.putImageData(this.imagedata, 0, 0);
   }
 }
