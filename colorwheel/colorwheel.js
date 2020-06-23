@@ -195,7 +195,7 @@ export class ColorWheel extends Component {
     return this.getValidPieEdge(Math.floor(
       lerp(
         0,
-        this.colors.length-1,
+        this.colors.length,
         theta / (Math.PI * 2)
       )
     ));
@@ -217,7 +217,7 @@ export class ColorWheel extends Component {
     return this.getValidPieEdge(Math.ceil(
       lerp(
         0,
-        this.colors.length-1,
+        this.colors.length,
         theta / (Math.PI*2)
       )
     ));
