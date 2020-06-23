@@ -42,6 +42,11 @@ export class WheelColor {
       lerp(a.b, b.b, amount)
     );
   }
+  multiplyScalar (s) {
+    this.r *= s;
+    this.g *= s;
+    this.b *= s;
+  }
   toString () {
     return `${Math.floor(this.r)}, ${Math.floor(this.g)}, ${Math.floor(this.b)}`;
   }
@@ -265,6 +270,11 @@ export class ColorWheel extends Component {
           this.colors[right],
           a,
           this.mixingColor
+        );
+        this.mixingColor.multiplyScalar(
+          this.imagedata.width / (
+            d*2
+          )
         );
         this.setColorAtXY(x, y, this.mixingColor);
       }

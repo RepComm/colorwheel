@@ -9,11 +9,13 @@ body {
 
 #my-color-wheel-container {
   position: absolute;
-  top:40%;
-  left:40%;
-  width:20%;
-  height:20%;
+  top:25%;
+  left:25%;
+  width:25vw;
+  height:25vw;
+  border-radius: 25%;
   border-width:1px;
   border-style:solid;
   border-color:white;
+  overflow:hidden;
 }
