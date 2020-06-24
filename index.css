@@ -14,8 +14,9 @@ body {
   width:25vw;
   height:25vw;
   border-radius: 25%;
-  border-width:1px;
+  border-width:8px;
   border-style:solid;
   border-color:white;
   overflow:hidden;
+  cursor:cell;
 }

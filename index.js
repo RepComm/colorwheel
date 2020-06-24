@@ -2,6 +2,8 @@
 import { ColorWheel, WheelColor } from "./colorwheel/colorwheel.js";
 import { get } from "./colorwheel/aliases.js";
 
+let container = get("my-color-wheel-container");
+
 //Create a wheel
 let myWheel = new ColorWheel()
   //Add some colors (chainable ftw)
@@ -10,14 +12,17 @@ let myWheel = new ColorWheel()
   .addColor(WheelColor.fromRGB(0, 0, 255))
 
   //Mount it to our container
-  .mount(get("my-color-wheel-container"))
+  .mount( container )
 
   //Handle resizing and render automagically
   .handleResize()
   .handleRedrawLoop()
+  .handleColorPicking()
+  .on("color-pick", (color)=>{
+    container.style["border-color"] = `rgb(${color.toString()})`;
+  })
 
   //Applies 100% to width and height of canvas element
-  .fillParentSize();
+  .fillParentSize()
 
-console.log(myWheel);
 myWheel.render();

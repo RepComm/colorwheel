@@ -1,6 +1,8 @@
 # ColorWheel
 ESModule for rendering color wheels
 
+Basically, I hate that browsers have different color pickers on different OSes.
+
 ![demo 0 - image](./example.png)
 
 Take a look at the demo code:
@@ -42,4 +44,12 @@ Helper functions that make life easy
 
   //Applies 100% to width and height of canvas element
   .fillParentSize();
+```
+
+Color picking
+```javascript
+  .handleColorPicking()
+  .on("color-pick", (color)=>{
+    container.style["border-color"] = `rgb(${color.toString()})`;
+  })
 ```

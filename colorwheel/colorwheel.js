@@ -1,7 +1,7 @@
 
 import { on } from "./aliases.js";
 import { Component } from "./component.js";
-import { lerp, Utils, lerpClamped, dist, degrees } from "./math.js";
+import { lerp, Utils, dist } from "./math.js";
 
 export class WheelColor {
   constructor() {
@@ -47,6 +47,22 @@ export class WheelColor {
     this.g *= s;
     this.b *= s;
   }
+  swapChannels () {
+    let t = this.r;
+    this.r = this.g;
+    this.g = this.b;
+    this.b = t;
+  }
+  /**Copies the values from color c to itself
+   * @param {WheelColor} c
+   * @returns {WheelColor} self
+   */
+  copy (c) {
+    this.r = c.r;
+    this.g = c.g;
+    this.b = c.b;
+    return this;
+  }
   toString () {
     return `${Math.floor(this.r)}, ${Math.floor(this.g)}, ${Math.floor(this.b)}`;
   }
@@ -60,6 +76,10 @@ export class ColorWheel extends Component {
 
     this.mixingColor = new WheelColor();
 
+    this.whiteColor = new WheelColor().setRGB(255, 255, 255);
+
+    this.pickedColor = new WheelColor();
+
     this.make("canvas");
     /**@type {CanvasRenderingContext2D}*/
     this.ctx = this.element.getContext("2d");
@@ -72,6 +92,12 @@ export class ColorWheel extends Component {
       y:0
     };
 
+    /**@type {Set<ColorPickListener>}
+     * @callback ColorPickListener
+     * @param {WheelColor} color
+     */
+    this.pickListeners = new Set();
+
     this.needsRedraw = false;
     this.shouldHandleRedrawLoop = false;
     this.onAnimFrame = ()=>{
@@ -80,6 +106,16 @@ export class ColorWheel extends Component {
           this.render();
         }
         window.requestAnimationFrame(this.onAnimFrame);
+      }
+    }
+
+    /**@param {MouseEvent} e 
+     */
+    this.onCanvasClick = (e)=>{
+      if (e.buttons < 1) return;
+      this.pickedColor = this.getColorAt(e.layerX, e.layerY, this.pickedColor);
+      for (let l of this.pickListeners) {
+        l(this.pickedColor);
       }
     }
   }
@@ -128,6 +164,14 @@ export class ColorWheel extends Component {
   handleRedrawLoop() {
     this.shouldHandleRedrawLoop = true;
     window.requestAnimationFrame(this.onAnimFrame);
+    return this;
+  }
+  /**Tell the wheel to handle color picking events
+   * @returns {ColorWheel} self
+   */
+  handleColorPicking () {
+    this.on("click", this.onCanvasClick);
+    this.on("mousemove", this.onCanvasClick);
     return this;
   }
   fillParentSize() {
@@ -191,6 +235,42 @@ export class ColorWheel extends Component {
    */
   setColorAtXY(x, y, c) {
     this.setPixelAtXY(x, y, c.r, c.g, c.b);
+  }
+  /**Get a color at a pixel offset within imagedata
+   * @param {number} x local x
+   * @param {number} y local y
+   * @param {WheelColor|undefined} output WheelColor to output to, if undefined creates a new instance
+   * @returns {WheelColor} output or a new instance of WheelColor if output was undefined
+   */
+  getColorAt (x, y, output=undefined) {
+    let ind = this.getColorIndex(x, y);
+    if (!this.checkXYBounds(x, y)) throw `${x}, ${y} is not within bounds of imagedata`;
+    if (output === undefined) output = new WheelColor();
+
+    output.setRGB(
+      this.imagedata.data[ind + 0],
+      this.imagedata.data[ind + 1],
+      this.imagedata.data[ind + 2]
+    );
+    return output;
+  }
+  /**Get the byte offset in imagedata where the 4 bytes that represent x,y are located
+   * @param {number} x 
+   * @param {number} y
+   * @returns {number} byte offset in imagedata.data 
+   */
+  getColorIndex (x, y) {
+    return Utils.TwoDimToIndex(x, y, this.imagedata.width)*4;
+  }
+  /**Check if byte offset contained in imagedata.data.length
+   * @param {number} ind
+   * @returns {boolean} true if good to access
+   */
+  checkIndexBounds (ind) {
+    return !(ind < 0 || ind > this.imagedata.data.length);
+  }
+  checkXYBounds (x, y) {
+    return !(x < 0 || x > this.imagedata.width || y < 0 || y > this.imagedata.height);
   }
   /**Get the leftmost edge of the pie slice
    * @param {number} theta in radians
@@ -271,14 +351,47 @@ export class ColorWheel extends Component {
           a,
           this.mixingColor
         );
+        
         this.mixingColor.multiplyScalar(
           this.imagedata.width / (
-            d*2
+            d / 8
           )
+        );
+        
+        WheelColor.lerp(
+          this.mixingColor,
+          this.whiteColor,
+          Math.pow(d, 0.01),
+          this.mixingColor
         );
         this.setColorAtXY(x, y, this.mixingColor);
       }
     }
     this.ctx.putImageData(this.imagedata, 0, 0);
+  }
+  /**Overridden component.on method, accepts normal dom event types as well as "color-pick"
+   * @param {string|"color-pick"} type
+   * @param {EventListener|ColorPickListener} callback
+   * @callback ColorPickListener
+   * @param {WheelColor} color
+   */
+  on (type, callback) {
+    switch(type) {
+      case "color-pick":
+        this.pickListeners.add(callback);
+        break;
+      default:
+        super.on(type, callback);
+        break;
+    }
+    return this;
+  }
+  /**Overridden from component.js because I want autocomplete..
+   * @param {HTMLELement|Component} p 
+   * @returns {ColorWheel} self
+   */
+  mount (p) {
+    super.mount(p);
+    return this;
   }
 }
