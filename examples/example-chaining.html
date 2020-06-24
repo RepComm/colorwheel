@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>ColorWheel example - chaining</title>
+  <style>
+    body {
+      background-color:rgb(65, 65, 65);
+    }
+    #wheels {
+      display: flex;
+    }
+    .wheel {
+      border-radius: 25%;
+      border-width: 8px;
+      border-style: solid;
+      border-color: rgb(255, 255, 255);
+      overflow: hidden;
+      cursor: cell;
+      flex:1;
+      height:min-content;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="wheels">
+    <div id="wheel-container-channel-0" class="wheel">
+
+    </div>
+    <div id="wheel-container-channel-1" class="wheel"></div>
+    <div id="wheel-container-channel-2" class="wheel"></div>
+    <div id="wheel-container-output" class="wheel"></div>
+  </div>
+  <script type="module">
+    "use strict";
+    import { ColorWheel, WheelColor } from "../colorwheel/colorwheel.js";
+    import { get } from "../colorwheel/aliases.js";
+
+    let outputContainer = get("wheel-container-output");
+    //Create a wheel
+    let output = new ColorWheel()
+      //Add some colors (chainable ftw)
+      .addColor(WheelColor.fromRGB(255, 0, 0))
+      .addColor(WheelColor.fromRGB(0, 255, 0))
+      .addColor(WheelColor.fromRGB(0, 0, 255))
+
+      //Mount it to our container
+      .mount(outputContainer)
+
+      //Handle resizing and render automagically
+      .handleResize()
+      .handleRedrawLoop()
+      .handleColorPicking()
+      .on("color-pick", (color) => {
+        outputContainer.style["border-color"] = `rgb(${color.toString()})`;
+      })
+      //Applies 100% to width and height of canvas element
+      .fillParentSize();
+    output.render();
+
+
+    let channel0container = get("wheel-container-channel-0");
+    //Create a wheel
+    let channel0 = new ColorWheel()
+      //Add some colors (chainable ftw)
+      .addColor(WheelColor.fromRGB(255, 0, 0))
+      .addColor(WheelColor.fromRGB(0, 255, 0))
+      .addColor(WheelColor.fromRGB(0, 0, 255))
+
+      //Mount it to our container
+      .mount(channel0container)
+
+      //Handle resizing and render automagically
+      .handleResize()
+      .handleRedrawLoop()
+      .handleColorPicking()
+      .on("color-pick", (color) => {
+        output.colors[0].copy(color).swapChannels();
+        output.markRedraw();
+        channel0container.style["border-color"] = `rgb(${color.toString()})`;
+      })
+      //Applies 100% to width and height of canvas element
+      .fillParentSize();
+    channel0.render();
+
+    let channel1container = get("wheel-container-channel-1");
+    //Create a wheel
+    let channel1 = new ColorWheel()
+      //Add some colors (chainable ftw)
+      .addColor(WheelColor.fromRGB(255, 0, 0))
+      .addColor(WheelColor.fromRGB(0, 255, 0))
+      .addColor(WheelColor.fromRGB(0, 0, 255))
+
+      //Mount it to our container
+      .mount(channel1container)
+
+      //Handle resizing and render automagically
+      .handleResize()
+      .handleRedrawLoop()
+      .handleColorPicking()
+      .on("color-pick", (color) => {
+        output.colors[1].copy(color).swapChannels();
+        output.markRedraw();
+        channel1container.style["border-color"] = `rgb(${color.toString()})`;
+      })
+      //Applies 100% to width and height of canvas element
+      .fillParentSize();
+    channel1.render();
+
+    let channel2container = get("wheel-container-channel-2");
+    //Create a wheel
+    let channel2 = new ColorWheel()
+      //Add some colors (chainable ftw)
+      .addColor(WheelColor.fromRGB(255, 0, 0))
+      .addColor(WheelColor.fromRGB(0, 255, 0))
+      .addColor(WheelColor.fromRGB(0, 0, 255))
+
+      //Mount it to our container
+      .mount(channel2container)
+
+      //Handle resizing and render automagically
+      .handleResize()
+      .handleRedrawLoop()
+      .handleColorPicking()
+      .on("color-pick", (color) => {
+        output.colors[2].copy(color).swapChannels();
+        output.markRedraw();
+        channel2container.style["border-color"] = `rgb(${color.toString()})`;
+      })
+      //Applies 100% to width and height of canvas element
+      .fillParentSize();
+    channel2.render();
+  </script>
+</body>
+
+</html>

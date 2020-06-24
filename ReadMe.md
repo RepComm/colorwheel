@@ -11,6 +11,8 @@ Take a look at the demo code:
 Take a look at the output:
 [demo 0 - visual](https://repcomm.github.io/colorwheel)
 
+[demo 1 - visual](https://repcomm.github.io/colorwheel/examples/example-chaining.html)
+
 Usage is fairly simple:
 
 Creating the wheel
